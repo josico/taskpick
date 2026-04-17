@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="TASKPICK">
+  <title>TASKPICK</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    body {
+      background: #0f0f0f;
+      color: #f0ede8;
+      font-family: 'Courier New', Courier, monospace;
+      min-height: 100vh;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 48px;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 28px 24px 20px;
+      border-bottom: 1px solid #2a2a2a;
+    }
+
+    .logo {
+      font-size: 13px;
+      letter-spacing: 0.3em;
+      color: #e8c97a;
+      font-weight: 700;
+    }
+
+    #count {
+      font-size: 12px;
+      color: #555;
+      letter-spacing: 0.1em;
+    }
+
+    #list-view, #pick-view {
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    #pick-view { display: none; align-items: center; padding-top: 40px; }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 6px;
+      color: #f0ede8;
+      font-size: 16px;
+      padding: 12px 14px;
+      outline: none;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus { border-color: #555; }
+    input[type="text"]::placeholder { color: #444; }
+
+    #add-btn {
+      background: #e8c97a;
+      border: none;
+      border-radius: 6px;
+      color: #0f0f0f;
+      font-size: 20px;
+      font-weight: 700;
+      width: 46px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    #task-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-height: 40px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 6px;
+      padding: 12px 14px;
+      gap: 12px;
+    }
+
+    .task-text {
+      flex: 1;
+      font-size: 14px;
+      line-height: 1.4;
+      color: #d0cdc8;
+    }
+
+    .delete-btn {
+      background: none;
+      border: none;
+      color: #444;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 2px;
+      flex-shrink: 0;
+      line-height: 1;
+      font-family: inherit;
+    }
+
+    #empty-msg {
+      color: #444;
+      font-size: 14px;
+      text-align: center;
+      padding: 40px 0;
+      letter-spacing: 0.05em;
+    }
+
+    #pick-btn {
+      width: 100%;
+      padding: 16px;
+      background: #e8c97a;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      font-family: inherit;
+      margin-top: 8px;
+    }
+
+    /* Pick view */
+    .card {
+      width: 100%;
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 12px;
+      padding: 40px 28px;
+      text-align: center;
+    }
+
+    .card-label {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      color: #e8c97a;
+      margin-bottom: 20px;
+    }
+
+    #card-text {
+      font-size: 22px;
+      line-height: 1.5;
+      color: #f0ede8;
+      font-weight: 500;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+    }
+
+    #done-btn {
+      flex: 1;
+      padding: 16px;
+      background: #e8c97a;
+      color: #0f0f0f;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+    }
+
+    #skip-btn {
+      flex: 1;
+      padding: 16px;
+      background: transparent;
+      color: #888;
+      border: 1px solid #333;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      letter-spacing: 0.05em;
+    }
+
+    #back-btn {
+      background: none;
+      border: none;
+      color: #444;
+      font-size: 13px;
+      cursor: pointer;
+      letter-spacing: 0.05em;
+      font-family: inherit;
+      margin-top: 12px;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+      0%   { transform: translateX(0); opacity: 1; }
+      20%  { transform: translateX(-8px); }
+      40%  { transform: translateX(8px); }
+      60%  { transform: translateX(-5px); }
+      80%  { transform: translateX(5px); opacity: 0.4; }
+      100% { transform: translateX(0); opacity: 0; }
+    }
+
+    .fade-in { animation: fadeUp 0.25s ease forwards; }
+    .shake   { animation: shake 0.35s ease forwards; }
+  </style>
+</head>
+<body>
+
+<header>
+  <span class="logo">TASKPICK</span>
+  <span id="count">0件</span>
+</header>
+
+<div id="list-view">
+  <div class="input-row">
+    <input type="text" id="task-input" placeholder="タスクを追加…">
+    <button id="add-btn">＋</button>
+  </div>
+  <div id="task-list">
+    <div id="empty-msg">タスクがありません</div>
+  </div>
+  <button id="pick-btn" style="display:none">今やることを引く</button>
+</div>
+
+<div id="pick-view">
+  <div class="card" id="card">
+    <div class="card-label">やること</div>
+    <div id="card-text"></div>
+  </div>
+  <div class="action-row">
+    <button id="done-btn">完了</button>
+    <button id="skip-btn">別のを引く</button>
+  </div>
+  <button id="back-btn">← リストに戻る</button>
+</div>
+
+<script>
+  const STORAGE_KEY = 'taskpick-tasks';
+
+  let tasks = [];
+  let currentId = null;
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      tasks = raw ? JSON.parse(raw) : [];
+    } catch { tasks = []; }
+  }
+
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks)); } catch {}
+  }
+
+  function render() {
+    const list = document.getElementById('task-list');
+    const empty = document.getElementById('empty-msg');
+    const pickBtn = document.getElementById('pick-btn');
+    const count = document.getElementById('count');
+
+    count.textContent = tasks.length + '件';
+
+    // clear existing items (keep empty-msg)
+    [...list.querySelectorAll('.task-item')].forEach(el => el.remove());
+
+    if (tasks.length === 0) {
+      empty.style.display = 'block';
+      pickBtn.style.display = 'none';
+    } else {
+      empty.style.display = 'none';
+      pickBtn.style.display = 'block';
+      tasks.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'task-item';
+        item.innerHTML = `<span class="task-text">${escHtml(t.text)}</span><button class="delete-btn" data-id="${t.id}">×</button>`;
+        list.appendChild(item);
+      });
+    }
+  }
+
+  function escHtml(str) {
+    return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function addTask() {
+    const input = document.getElementById('task-input');
+    const text = input.value.trim();
+    if (!text) return;
+    tasks.push({ id: Date.now(), text });
+    save();
+    render();
+    input.value = '';
+    input.focus();
+  }
+
+  function removeTask(id) {
+    tasks = tasks.filter(t => t.id !== id);
+    save();
+    render();
+  }
+
+  function pickRandom(pool) {
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function showPick(task) {
+    currentId = task.id;
+    const card = document.getElementById('card');
+    document.getElementById('card-text').textContent = task.text;
+    card.classList.remove('fade-in', 'shake');
+    void card.offsetWidth; // reflow
+    card.classList.add('fade-in');
+    document.getElementById('list-view').style.display = 'none';
+    document.getElementById('pick-view').style.display = 'flex';
+    document.getElementById('pick-view').style.flexDirection = 'column';
+    document.getElementById('pick-view').style.alignItems = 'center';
+    document.getElementById('pick-view').style.gap = '32px';
+  }
+
+  function showList() {
+    document.getElementById('list-view').style.display = 'flex';
+    document.getElementById('pick-view').style.display = 'none';
+    currentId = null;
+  }
+
+  // Events
+  document.getElementById('add-btn').addEventListener('click', addTask);
+  document.getElementById('task-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTask();
+  });
+
+  document.getElementById('task-list').addEventListener('click', e => {
+    const btn = e.target.closest('.delete-btn');
+    if (btn) removeTask(Number(btn.dataset.id));
+  });
+
+  document.getElementById('pick-btn').addEventListener('click', () => {
+    if (tasks.length === 0) return;
+    showPick(pickRandom(tasks));
+  });
+
+  document.getElementById('done-btn').addEventListener('click', () => {
+    if (currentId === null) return;
+    const card = document.getElementById('card');
+    card.classList.remove('fade-in', 'shake');
+    void card.offsetWidth;
+    card.classList.add('shake');
+    setTimeout(() => {
+      removeTask(currentId);
+      showList();
+    }, 380);
+  });
+
+  document.getElementById('skip-btn').addEventListener('click', () => {
+    const pool = tasks.filter(t => t.id !== currentId);
+    if (pool.length === 0) { showList(); return; }
+    showPick(pickRandom(pool));
+  });
+
+  document.getElementById('back-btn').addEventListener('click', showList);
+
+  // Init
+  load();
+  render();
+</script>
+</body>
+</html>
